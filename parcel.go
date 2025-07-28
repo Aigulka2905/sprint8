@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"os"
 
 	_ "modernc.org/sqlite"
 )
@@ -57,10 +56,12 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 		var p Parcel
 		err := rows.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to scan parcel: %v\n", err)
-			os.Exit(1)
+			return nil, fmt.Errorf("failed to scan parcel: %w", err)
 		}
 		res = append(res, p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate over rows: %w", err)
 	}
 	return res, nil
 }
@@ -69,10 +70,14 @@ func (s ParcelStore) SetStatus(number int, status string) error {
 	// реализуйте обновление статуса в таблице parcel
 	query := "UPDATE parcel SET status = ? WHERE number = ?"
 	res, err := s.db.Exec(query, status, number)
+	if err != nil {
+		return fmt.Errorf("failed to update status: %w", err)
+	}
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("failed to check affected rows: %v", err)
+		return fmt.Errorf("failed to check affected rows: %w", err)
 	}
+
 	if rows == 0 {
 		return fmt.Errorf("cannot change address: parcel %d not found or status is not registered", number)
 	}

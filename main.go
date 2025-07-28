@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -103,7 +104,7 @@ func main() {
 	db, err := sql.Open("sqlite", "tracker.db")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to connect to database: %v\n", err)
-		os.Exit(1) // Завершаем программу с кодом ошибки
+		log.Fatalf("Failed to connect to database: %v", err) // Завершаем программу с кодом ошибки
 	}
 	defer db.Close()
 
